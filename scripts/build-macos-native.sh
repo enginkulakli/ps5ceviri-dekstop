@@ -42,5 +42,5 @@ cmake --build native-build --target ps5-remote
 cmake --install native-build --prefix "$root/native-bin"
 python3 scripts/stage-macos-libraries.py "$root/native-bin/ps5-remote" "${prefixes[@]}"
 brew list --versions "${libraries[@]}" > "$root/native-bin/homebrew-build-dependencies.txt"
-lipo -verify_arch arm64 "$root/native-bin/ps5-remote"
+lipo "$root/native-bin/ps5-remote" -verify_arch arm64
 "$root/native-bin/ps5-remote" --self-test

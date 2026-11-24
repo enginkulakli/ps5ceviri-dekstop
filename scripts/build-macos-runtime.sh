@@ -39,5 +39,5 @@ tar -xJf "$archive" -C "$deps"
   cp COPYING.LGPLv2.1 "$runtime/FFmpeg-LICENSE.txt"
 )
 "$runtime/ffmpeg" -version
-lipo -verify_arch arm64 "$runtime/ffmpeg"
-lipo -verify_arch arm64 "$runtime/jre/bin/java"
+lipo "$runtime/ffmpeg" -verify_arch arm64
+lipo "$runtime/jre/bin/java" -verify_arch arm64

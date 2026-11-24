@@ -64,7 +64,7 @@ jobs:
           /usr/libexec/PlistBuddy -c 'Print NSLocalNetworkUsageDescription' "$app/Contents/Info.plist"
           for binary in "$app/Contents/MacOS/$bundle_name" "$app/Contents/Resources/native/ps5-remote" \
                          "$app/Contents/Resources/runtime/ffmpeg" "$app/Contents/Resources/runtime/jre/bin/java"; do
-            lipo -verify_arch arm64 "$binary"
+            lipo "$binary" -verify_arch arm64
           done
       - name: Mount disk image and test the packaged app
         id: smoke

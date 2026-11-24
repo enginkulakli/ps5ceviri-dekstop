@@ -85,7 +85,7 @@ def stage(binary, search):
             subprocess.check_call([*edits, str(output)])
 
     for output in [*(destination / name for name in sorted(copied)), binary]:
-        subprocess.check_call(["lipo", "-verify_arch", "arm64", str(output)])
+        subprocess.check_call(["lipo", str(output), "-verify_arch", "arm64"])
         subprocess.check_call(["codesign", "--force", "--sign", "-", str(output)])
 
 
