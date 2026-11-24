@@ -26,3 +26,7 @@ Tesseract English model: https://github.com/naptha/tessdata
 Çevrimdışı EN→TR model: https://huggingface.co/onnx-community/opus-mt-tc-big-en-tr/tree/ce128ea834a090aca240e4e113e7756e06cc78e0
 Orijinal OPUS-MT model ve CC BY 4.0: https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-en-tr
 SentencePiece: https://github.com/google/sentencepiece
+
+macOS ARM64 çalışma zamanı
+Homebrew formülleri ve paketlenen yerel kitaplık kaynakları: https://github.com/Homebrew/homebrew-core
+FFmpeg 9.1 macOS yapılandırması: scripts/build-macos-runtime.sh

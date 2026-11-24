@@ -109,7 +109,7 @@ export function TranslationSettings({ live }: { live: LiveStatus | null }) {
 
   return (
     <>
-      {live?.available === false && <Notice kind="warning" text="Bu pakette Windows OCR ve V3 çalışma zamanı bulunamadı." />}
+      {live?.available === false && <Notice kind="warning" text="Bu pakette OCR ve V3 çalışma zamanı bulunamadı." />}
       <Card>
         <h3>Görüntü modu</h3>
         <div className="actions">
@@ -131,7 +131,7 @@ export function TranslationSettings({ live }: { live: LiveStatus | null }) {
         ) : (
           <>
             <Field label={engine === "ai" ? "OpenAI API anahtarı" : "Google Cloud API anahtarı"} value={draft} onChangeText={setDraft}
-              secureTextEntry autoCapitalize="none" hint={keys[engine] ? "Windows güvenli deposuna kayıtlı." : "Bir anahtar kaydedin."} />
+              secureTextEntry autoCapitalize="none" hint={keys[engine] ? "İşletim sisteminin güvenli deposuna kayıtlı." : "Bir anahtar kaydedin."} />
             <div className="actions">
               <Button label="API anahtarını kaydet" disabled={!bridge || !draft.trim() || action.busy}
                 onPress={() => void action.run(async () => { await bridge!.key(engine, draft.trim()); setDraft(""); setKeys(await bridge!.keys()); })} />

@@ -11,16 +11,39 @@ permissions:
 jobs:
   package:
     runs-on: macos-15
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      HOMEBREW_NO_AUTO_UPDATE: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+      - name: Install native build dependencies
+        run: |
+          test "$(uname -m)" = arm64
+          brew install cmake ninja pkgconf protobuf openssl@3 libevent json-c miniupnpc
+          python3 -m venv .native-deps/python
+          .native-deps/python/bin/python -m pip install protobuf==6.33.5
+      - name: Compile the headless Chiaki helper
+        run: |
+          export PATH="$PWD/.native-deps/python/bin:$PATH"
+          bash scripts/build-macos-native.sh
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Build the bundled JVM, V3 core and FFmpeg
+        run: bash scripts/build-macos-runtime.sh
       - run: npm ci
+      - run: npm run test:unit
+      - name: Test H.264, OCR, V3, translation and Tizen protocol
+        run: |
+          export PS5_TEST_JAVA="$PWD/runtime-bin/jre/bin/java"
+          export PS5_TEST_FFMPEG="$PWD/runtime-bin/ffmpeg"
+          npm run test:runtime
       - name: Build arm64 disk image with local ad-hoc signing
         run: npm run dist:mac
       - name: Verify disk image, bundle helpers and signature
@@ -37,12 +60,24 @@ jobs:
           test -d "$app/Contents/Frameworks/$bundle_name Helper.app"
           test -d "$app/Contents/Frameworks/$bundle_name Helper (Renderer).app"
           codesign --verify --deep --strict "$app"
-      - name: Launch packaged app and verify setup
+          test "$(/usr/libexec/PlistBuddy -c 'Print LSMinimumSystemVersion' "$app/Contents/Info.plist")" = '15.0'
+          /usr/libexec/PlistBuddy -c 'Print NSLocalNetworkUsageDescription' "$app/Contents/Info.plist"
+          for binary in "$app/Contents/MacOS/$bundle_name" "$app/Contents/Resources/native/ps5-remote" \
+                         "$app/Contents/Resources/runtime/ffmpeg" "$app/Contents/Resources/runtime/jre/bin/java"; do
+            lipo -verify_arch arm64 "$binary"
+          done
+      - name: Mount disk image and test the packaged app
         id: smoke
         run: |
-          app="$(find release -maxdepth 2 -type d -name '*.app' -print -quit)"
+          dmg="$(find release -maxdepth 1 -name '*.dmg' -print -quit)"
+          mount="$(mktemp -d "$RUNNER_TEMP/ps5-dmg.XXXXXX")"
+          hdiutil attach "$dmg" -mountpoint "$mount" -readonly -nobrowse
+          trap 'hdiutil detach "$mount" >/dev/null; rmdir "$mount" 2>/dev/null || true' EXIT
+          app="$mount/PS5 Cevirmen.app"
+          codesign --verify --deep --strict "$app"
+          "$app/Contents/Resources/native/ps5-remote" --self-test
           name="$(/usr/libexec/PlistBuddy -c 'Print CFBundleExecutable' "$app/Contents/Info.plist")"
-          ELECTRON_ENABLE_LOGGING=1 PS5_DESKTOP_EXECUTABLE="$PWD/$app/Contents/MacOS/$name" npm run test:smoke
+          ELECTRON_ENABLE_LOGGING=1 PS5_PACKAGED_RUNTIME=1 PS5_DESKTOP_EXECUTABLE="$app/Contents/MacOS/$name" npm run test:smoke
       - name: Read macOS crash diagnostics
         if: failure()
         run: |

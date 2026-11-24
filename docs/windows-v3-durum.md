@@ -10,7 +10,7 @@
 | TV | Android V3 WebSocket sunucusu yeniden kullanılıyor. Mevcut metin, TTL, yenileme, temizleme ve V3 konumlu altyazı mesajları korunuyor. Windows TV istemcisinin bağlanmasını, IP’yi, yeniden bağlantıyı ve gönderilen test metnini gösterebiliyor. Gerçek Tizen 4.0 TV’de HDMI, kumanda, sertifika ve kurulum doğrulaması bekliyor. |
 | Arayüz | Durum, PS5, çeviri, Samsung TV, geçmiş, ayarlar ve kurulum ekranları bağlandı. Windows paketi Android cihaz veya emülatör kullanmaz. |
 
-Kapsam dışında kalan önceki Android işlevleri arasında MediaProjection ekran yakalama, Android arka plan bildirimi, sistem üstü yerel altyazı katmanı ve ML Kit’in çok dilli model yöneticisi var. Windows OCR alanı ayarı yüzde girdilerini kullanıyor. Otomatik Samsung TV keşfi ve Tizen sertifika/imzalama/yükleme sihirbazı henüz uygulanmadı. Kurulu olmayan TV için Tizen Studio adımları donanım testi kılavuzunda bulunuyor. Bu sürümde macOS için Windows çalışma zamanı taşınmadı.
+Kapsam dışında kalan önceki Android işlevleri arasında MediaProjection ekran yakalama, Android arka plan bildirimi, sistem üstü yerel altyazı katmanı ve ML Kit’in çok dilli model yöneticisi var. Windows OCR alanı ayarı yüzde girdilerini kullanıyor. Otomatik Samsung TV keşfi ve Tizen sertifika/imzalama/yükleme sihirbazı henüz uygulanmadı. Kurulu olmayan TV için Tizen Studio adımları donanım testi kılavuzunda bulunuyor. Apple Silicon için ortak çalışma zamanı ayrı macOS iş akışında derlenir. [macOS doğrulaması](macos-arm64-durum.md)
 
 ## Otomatik doğrulama
 

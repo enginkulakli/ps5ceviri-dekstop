@@ -49,7 +49,7 @@ jobs:
         run: |
           $env:PS5_TEST_JAVA = (Resolve-Path './runtime-bin/jre/bin/java.exe').Path
           $env:PS5_TEST_FFMPEG = (Resolve-Path './runtime-bin/ffmpeg.exe').Path
-          npm run test:windows
+          npm run test:runtime
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Check the native helper outside MSYS2
         shell: pwsh
@@ -65,7 +65,7 @@ jobs:
             Where-Object Name -NotLike 'Uninstall*' | Select-Object -First 1
           if (-not $exe) { throw 'Packaged desktop executable is missing.' }
           $env:PS5_DESKTOP_EXECUTABLE = $exe.FullName
-          $env:PS5_PACKAGED_WINDOWS = "1"
+          $env:PS5_PACKAGED_RUNTIME = "1"
           npm run test:smoke
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4

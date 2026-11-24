@@ -74,7 +74,7 @@ class Live {
   }
 
   async start(settings) {
-    if (!this.snapshot().available) throw new Error("Windows OCR ve V3 çalışma zamanı bulunamadı.");
+    if (!this.snapshot().available) throw new Error("OCR ve V3 çalışma zamanı bulunamadı.");
     this.state = { active: true, english: "", turkish: "", ocr: "PS5 görüntüsü bekleniyor", translation: "Bekliyor" };
     await this.configure(settings, true);
     this.timer = setInterval(() => void this.reconcile(), 140);

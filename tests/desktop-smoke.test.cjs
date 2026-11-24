@@ -6,7 +6,7 @@ const path = require("node:path");
 const { strict: assert } = require("node:assert");
 const { test } = require("node:test");
 
-test("desktop setup, connection preferences and glossary survive a restart", { timeout: process.env.PS5_PACKAGED_WINDOWS === "1" ? 420_000 : 90_000 }, async () => {
+test("desktop setup, connection preferences and glossary survive a restart", { timeout: process.env.PS5_PACKAGED_RUNTIME === "1" ? 420_000 : 90_000 }, async () => {
   const profile = await mkdtemp(path.join(tmpdir(), "ps5-desktop-test-"));
   const executablePath = process.env.PS5_DESKTOP_EXECUTABLE;
   const args = [`--user-data-dir=${profile}`];
@@ -23,12 +23,20 @@ test("desktop setup, connection preferences and glossary survive a restart", { t
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await expect(page.getByRole("heading", { name: "Hoş geldiniz" })).toBeVisible();
-    if (process.env.PS5_PACKAGED_WINDOWS === "1") {
+    if (process.env.PS5_PACKAGED_RUNTIME === "1") {
       assert.equal(await page.evaluate(async () => (await window.ps5Desktop.ps5.status()).available), true);
       assert.equal(await page.evaluate(async () => (await window.ps5Desktop.tv.status()).available), true);
       assert.equal(await page.evaluate(async () => (await window.ps5Desktop.live.status()).available), true);
       await page.evaluate(() => window.ps5Desktop.live.key("google_cloud", "fixture-test-key"));
       assert.equal(await page.evaluate(async () => (await window.ps5Desktop.live.keys()).google_cloud), true);
+      const sealed = await app.evaluate(async ({ app: electronApp, safeStorage }) => {
+        const path = process.getBuiltinModule("node:path");
+        const fs = process.getBuiltinModule("node:fs/promises");
+        const data = Buffer.from(await fs.readFile(path.join(electronApp.getPath("userData"), "google_cloud.encrypted"), "utf8"), "base64");
+        const decrypted = await safeStorage.decryptStringAsync(data);
+        return { ciphertext: data.includes(Buffer.from("fixture-test-key")), matches: decrypted.result === "fixture-test-key", arch: process.arch };
+      });
+      assert.deepEqual(sealed, { ciphertext: false, matches: true, arch: process.platform === "darwin" ? "arm64" : "x64" });
       await page.evaluate(() => window.ps5Desktop.live.key("google_cloud", ""));
 
       const fixture = await readFile(path.join(__dirname, "fixtures", "subtitle.h264"), "base64");
@@ -36,7 +44,7 @@ test("desktop setup, connection preferences and glossary survive a restart", { t
         const path = process.getBuiltinModule("node:path");
         const requireFromApp = process.getBuiltinModule("node:module").createRequire(path.join(electronApp.getAppPath(), "desktop", "main.cjs"));
         const { decode, Ocr } = requireFromApp("./frames.cjs");
-        const ffmpeg = path.join(process.resourcesPath, "runtime", "ffmpeg.exe");
+        const ffmpeg = path.join(process.resourcesPath, "runtime", process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg");
         const image = await new Promise((resolve, reject) => {
           const decoder = decode(ffmpeg, resolve, (error) => reject(new Error(error)));
           decoder.process.on("close", () => reject(new Error("No decoded image from packaged FFmpeg.")));
@@ -65,7 +73,7 @@ test("desktop setup, connection preferences and glossary survive a restart", { t
     assert.equal(await page.evaluate(() => typeof window.require), "undefined");
 
     await page.getByRole("button", { name: "Devam et" }).click();
-    await expect(page.getByText("Uygulama TV’de kurulu değilse Windows donanım testi kılavuzundaki Samsung sertifikası ve Tizen Studio adımlarını kullanın.")).toBeVisible();
+    await expect(page.getByText("Uygulama TV’de kurulu değilse donanım testi kılavuzundaki Samsung sertifikası ve Tizen Studio adımlarını kullanın.")).toBeVisible();
     await page.getByRole("button", { name: "TV adresi tercihlerine git" }).click();
     const ip = page.getByRole("textbox", { name: "Samsung TV IP adresi" });
     await ip.fill("999.0.1.1");

@@ -91,7 +91,7 @@ export function SetupWizard({ finishLater, openTv }: { finishLater: () => void; 
         <Card>
           <h2 id="wizard-heading">TV bağlantısı ve uygulama kurulumu</h2>
           <p>TV’de mevcut PS5 Altyazı TV uygulamasını açın. Üzerinde oyunun HDMI girişi açıkken bilgisayarın IP adresini ve sunucu portunu girin.</p>
-          <Notice kind="info" text="Uygulama TV’de kurulu değilse Windows donanım testi kılavuzundaki Samsung sertifikası ve Tizen Studio adımlarını kullanın." />
+          <Notice kind="info" text="Uygulama TV’de kurulu değilse donanım testi kılavuzundaki Samsung sertifikası ve Tizen Studio adımlarını kullanın." />
           <p>Samsung TV bölümünden altyazı sunucusunu açın, bir TV’nin bağlandığını kontrol edin ve test altyazısını gönderin.</p>
           <div className="actions">
             <Button label="TV adresi tercihlerine git" onPress={openTv} />

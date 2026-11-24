@@ -46,8 +46,11 @@ let v3;
 function setupServices(directory) {
   const runtime = app.isPackaged ? path.join(process.resourcesPath, "runtime") : path.join(__dirname, "../runtime-bin");
   const windows = process.platform === "win32";
-  const java = windows ? path.join(runtime, "jre", "bin", "java.exe") : "java";
-  const ffmpeg = windows ? path.join(runtime, "ffmpeg.exe") : "ffmpeg";
+  const bundledJava = path.join(runtime, "jre", "bin", windows ? "java.exe" : "java");
+  const bundledDecoder = path.join(runtime, windows ? "ffmpeg.exe" : "ffmpeg");
+  const required = windows || app.isPackaged;
+  const java = required || existsSync(bundledJava) ? bundledJava : "java";
+  const ffmpeg = required || existsSync(bundledDecoder) ? bundledDecoder : "ffmpeg";
   v3 = new V3Runtime(runtime, java);
   const archive = new Archive(path.join(directory, "translation-archive.db"));
   const keyFile = (engine) => {

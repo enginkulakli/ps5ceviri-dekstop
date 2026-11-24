@@ -21,7 +21,7 @@ class V3Runtime {
 
   start() {
     if (this.child) return this.child;
-    if (!this.available) throw new Error("Windows V3 çalışma zamanı bulunamadı.");
+    if (!this.available) throw new Error("V3 çalışma zamanı bulunamadı.");
     const classpath = ["ps5-v3.jar", "kotlin-stdlib.jar", "json.jar", "websocket.jar", "slf4j.jar"]
       .map((file) => path.join(this.directory, file)).join(path.delimiter);
     const child = spawn(this.java, ["-Dfile.encoding=UTF-8", "-cp", classpath, mainClass], { windowsHide: true });
