@@ -4,6 +4,7 @@ import appIcon from "./assets/images/icon.png";
 import { GameGlossaryEditor } from "./components/GameGlossaryEditor";
 import { Ionicons } from "./components/Ionicons";
 import { Button, Card, Chip, Field, Notice, StatusBadge, Stepper, type IconName } from "./components/ui";
+import { Ps5Connections, stageLabel, usePs5Status } from "./Ps5Connections";
 import { SetupWizard } from "./SetupWizard";
 import { useSettings } from "./settings";
 import { dark } from "./theme";
@@ -31,7 +32,7 @@ const pipelineCards: { title: string; icon: IconName }[] = [
   { title: "TV bağlantısı", icon: "tv-outline" },
 ];
 
-function Status({ openSetup }: { openSetup: () => void }) {
+function Status({ openSetup, ps5 }: { openSetup: () => void; ps5: Ps5Status | null }) {
   const { settings } = useSettings();
   return (
     <>
@@ -51,7 +52,9 @@ function Status({ openSetup }: { openSetup: () => void }) {
                 <span className="tile-icon"><Ionicons name={icon} size={20} color={dark.brandPrimary} /></span>
                 <h3>{title}</h3>
               </div>
-              <StatusBadge kind="native" />
+              {["PS5 bağlantısı", "Remote Play oturumu", "Görüntü akışı"].includes(title) && ps5?.available
+                ? <StatusBadge kind={ps5.stage === "video" ? "ready" : ps5.stage === "error" ? "error" : "idle"} label={stageLabel[ps5.stage]} />
+                : <StatusBadge kind="native" />}
             </Card>
           ))}
         </div>
@@ -145,6 +148,7 @@ function SamsungTv({ openSetup }: { openSetup: () => void }) {
 
 export function App() {
   const { settings, error } = useSettings();
+  const ps5 = usePs5Status();
   const [page, setPage] = useState<Page>(settings.tvSetupDeferred ? "status" : "setup");
   const openSetup = () => setPage("setup");
 
@@ -169,11 +173,12 @@ export function App() {
           <h1>{pages[page].label}</h1>
         </header>
         {error && <div role="alert"><Notice kind="error" text={error} /></div>}
-        {page === "status" && <Status openSetup={openSetup} />}
+        {ps5.error && <Notice kind="error" text={ps5.error} />}
+        {page === "status" && <Status openSetup={openSetup} ps5={ps5.state} />}
         {page === "translation" && <Translation />}
         {page === "tv" && <SamsungTv openSetup={openSetup} />}
         {page === "setup" && <SetupWizard finishLater={() => setPage("status")} openTv={() => setPage("tv")} />}
-        {page === "consoles" && <Card><StatusBadge kind="native" /><p>Yerel ağ keşfi, manuel IP bağlantısı ve eşleştirme Remote Play adaptörüyle eklenecek.</p></Card>}
+        {page === "consoles" && <Ps5Connections state={ps5.state} refresh={ps5.refresh} />}
         {page === "archive" && <Card><StatusBadge kind="native" /><p>Çeviri kayıtları ve Android V3 arşiv aktarımı SQLite adaptörüyle kullanılabilecek.</p></Card>}
         {page === "settings" && (
           <Card>

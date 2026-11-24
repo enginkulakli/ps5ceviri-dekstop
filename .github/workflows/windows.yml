@@ -11,7 +11,7 @@ permissions:
 jobs:
   package:
     runs-on: windows-2022
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
     steps:
@@ -20,7 +20,24 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: mingw64
+          update: true
+          install: git
+          pacboy: >-
+            gcc:p cmake:p ninja:p pkgconf:p openssl:p json-c:p miniupnpc:p
+            libevent:p protobuf:p python:p python-protobuf:p
+      - name: Compile and run the headless PS5 helper
+        shell: msys2 {0}
+        run: bash scripts/build-windows-native.sh
       - run: npm ci
+      - run: npm run test:unit
+      - name: Check the native helper outside MSYS2
+        shell: pwsh
+        run: |
+          & .\native-bin\ps5-remote.exe --self-test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build unsigned NSIS installer
         run: npm run dist:win
       - name: Launch packaged app and verify setup

@@ -15,7 +15,8 @@
     "start": "electron .",
     "test:smoke": "node --test tests/desktop-smoke.test.cjs",
     "dist:win": "npm run build && electron-builder --win nsis --x64 --publish never",
-    "dist:mac": "npm run build && electron-builder --mac dmg --arm64 --publish never -c.mac.identity=- -c.productName=\"PS5 Cevirmen\""
+    "dist:mac": "npm run build && electron-builder --mac dmg --arm64 --publish never -c.mac.identity=- -c.productName=\"PS5 Cevirmen\"",
+    "test:unit": "node --test tests/ps5.test.cjs"
   },
   "devDependencies": {
     "@playwright/test": "1.65.1",
@@ -45,7 +46,13 @@
     "artifactName": "PS5-Cevirmen-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "src/assets/images/icon.png",
-      "target": "nsis"
+      "target": "nsis",
+      "extraResources": [
+        {
+          "from": "native-bin",
+          "to": "native"
+        }
+      ]
     },
     "mac": {
       "category": "public.app-category.utilities",

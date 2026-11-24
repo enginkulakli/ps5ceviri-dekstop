@@ -11,3 +11,7 @@ test-results/
 profiles.xml
 .env
 .env.*
+.native-deps/
+native-build/
+native-bin/
+runtime-bin/
