@@ -1,5 +1,5 @@
 const { expect, _electron } = require("@playwright/test");
-const { mkdtemp, rm } = require("node:fs/promises");
+const { mkdtemp, rm, readFile } = require("node:fs/promises");
 const { isIPv4 } = require("node:net");
 const { tmpdir } = require("node:os");
 const path = require("node:path");
@@ -23,6 +23,33 @@ test("desktop setup, connection preferences and glossary survive a restart", { t
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await expect(page.getByRole("heading", { name: "Hoş geldiniz" })).toBeVisible();
+    if (process.env.PS5_PACKAGED_WINDOWS === "1") {
+      assert.equal(await page.evaluate(async () => (await window.ps5Desktop.ps5.status()).available), true);
+      assert.equal(await page.evaluate(async () => (await window.ps5Desktop.tv.status()).available), true);
+      assert.equal(await page.evaluate(async () => (await window.ps5Desktop.live.status()).available), true);
+      await page.evaluate(() => window.ps5Desktop.live.key("google_cloud", "fixture-test-key"));
+      assert.equal(await page.evaluate(async () => (await window.ps5Desktop.live.keys()).google_cloud), true);
+      await page.evaluate(() => window.ps5Desktop.live.key("google_cloud", ""));
+
+      const fixture = await readFile(path.join(__dirname, "fixtures", "subtitle.h264"), "base64");
+      const recognized = await app.evaluate(async ({ app: electronApp }, encoded) => {
+        const path = process.getBuiltinModule("node:path");
+        const requireFromApp = process.getBuiltinModule("node:module").createRequire(path.join(electronApp.getAppPath(), "desktop", "main.cjs"));
+        const { decode, Ocr } = requireFromApp("./frames.cjs");
+        const ffmpeg = path.join(process.resourcesPath, "runtime", "ffmpeg.exe");
+        const image = await new Promise((resolve, reject) => {
+          const decoder = decode(ffmpeg, resolve, (error) => reject(new Error(error)));
+          decoder.process.on("close", () => reject(new Error("No decoded image from packaged FFmpeg.")));
+          decoder.input.end(Buffer.from(encoded, "base64"));
+        });
+        const ocr = new Ocr();
+        try {
+          const output = await ocr.read(image, { mode: "subtitle", ocrRegion: { x: 0, y: .72, w: 1, h: .28 }, exclusions: [] });
+          return output.groups.flat().map((line) => line.text).join(" ");
+        } finally { await ocr.stop(); }
+      }, fixture);
+      assert.match(recognized, /GET TO THE BOAT/i);
+    }
 
     await page.getByRole("button", { name: "TV’yi hazırlamaya başla" }).click();
     await expect(page.getByText("12345", { exact: true })).toBeVisible();
@@ -32,7 +59,7 @@ test("desktop setup, connection preferences and glossary survive a restart", { t
     assert.equal(await page.evaluate(() => typeof window.require), "undefined");
 
     await page.getByRole("button", { name: "Devam et" }).click();
-    await expect(page.getByText("TV keşfi, sertifika ile imzalama, yükleme ve test altyazısı masaüstü entegrasyonu bekliyor.")).toBeVisible();
+    await expect(page.getByText("Uygulama TV’de kurulu değilse Windows donanım testi kılavuzundaki Samsung sertifikası ve Tizen Studio adımlarını kullanın.")).toBeVisible();
     await page.getByRole("button", { name: "TV adresi tercihlerine git" }).click();
     const ip = page.getByRole("textbox", { name: "Samsung TV IP adresi" });
     await ip.fill("999.0.1.1");

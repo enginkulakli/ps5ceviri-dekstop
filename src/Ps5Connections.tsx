@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSettings } from "./settings";
 import { Button, Card, Field, Notice, StatusBadge } from "./components/ui";
 
 export function errorText(cause: unknown) {
@@ -35,6 +36,7 @@ export function usePs5Status() {
 
 export function Ps5Connections({ state, refresh }: { state: Ps5Status | null; refresh: () => Promise<void> }) {
   const bridge = window.ps5Desktop?.ps5;
+  const { settings, update } = useSettings();
   const [found, setFound] = useState<DetectedPs5[] | null>(null);
   const [ip, setIp] = useState("");
   const [name, setName] = useState("PS5");
@@ -42,10 +44,9 @@ export function Ps5Connections({ state, refresh }: { state: Ps5Status | null; re
   const [pin, setPin] = useState("");
   const [loginPin, setLoginPin] = useState("");
   const [override, setOverride] = useState("");
-  const [selected, select] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const registered = state?.consoles.find((console) => console.id === selected) ?? state?.consoles[0];
+  const registered = state?.consoles.find((console) => console.id === settings.selectedConsoleId) ?? state?.consoles[0];
   const active = state && !["idle", "error"].includes(state.stage);
 
   async function run(action: () => Promise<unknown>) {
@@ -67,7 +68,7 @@ export function Ps5Connections({ state, refresh }: { state: Ps5Status | null; re
         {state?.consoles.length ? (
           <>
             <label className="ip-picker">PS5
-              <select value={registered?.id} onChange={(event) => { select(event.target.value); setOverride(""); }} disabled={!!active}>
+              <select value={registered?.id} onChange={(event) => { update({ selectedConsoleId: event.target.value }); setOverride(""); }} disabled={!!active}>
                 {state.consoles.map((console) => <option key={console.id} value={console.id}>{console.name} · {console.ip}</option>)}
               </select>
             </label>
@@ -77,7 +78,7 @@ export function Ps5Connections({ state, refresh }: { state: Ps5Status | null; re
               {active
                 ? <Button label="Remote Play’i durdur" disabled={["discovering", "stopping"].includes(state.stage)} onPress={() => void run(() => bridge!.stop())} />
                 : <Button label="Remote Play’i başlat" disabled={!registered || !state.available || busy}
-                    onPress={() => void run(() => bridge!.start(registered!.id, override.trim()))} />}
+                    onPress={() => void run(() => bridge!.start(registered!.id, override.trim(), settings))} />}
               <Button label="Konsol kaydını sil" variant="secondary" disabled={!registered || !!active || busy}
                 onPress={() => void run(() => bridge!.forget(registered!.id))} />
             </div>
@@ -108,7 +109,10 @@ export function Ps5Connections({ state, refresh }: { state: Ps5Status | null; re
         </div>
         <div className="actions"><Button label="PS5’i eşleştir" disabled={!state?.available || busy || !!active}
           onPress={() => void run(async () => {
-            try { await bridge!.pair(ip.trim(), account.trim(), pin, name); }
+            try {
+              const result = await bridge!.pair(ip.trim(), account.trim(), pin, name);
+              update({ selectedConsoleId: result.consoles.at(-1)?.id ?? null });
+            }
             finally { setPin(""); setAccount(""); }
           })} /></div>
       </Card>

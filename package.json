@@ -2,7 +2,7 @@
   "name": "ps5ceviri-desktop",
   "productName": "PS5 Çevirmen",
   "description": "PS5 Çevirmen masaüstü uygulaması",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "author": "PS5 Çevirmen contributors",
   "license": "AGPL-3.0-only",
@@ -16,7 +16,8 @@
     "test:smoke": "node --test tests/desktop-smoke.test.cjs",
     "dist:win": "npm run build && electron-builder --win nsis --x64 --publish never",
     "dist:mac": "npm run build && electron-builder --mac dmg --arm64 --publish never -c.mac.identity=- -c.productName=\"PS5 Cevirmen\"",
-    "test:unit": "node --test tests/ps5.test.cjs"
+    "test:unit": "node --test tests/ps5.test.cjs",
+    "test:windows": "node --test tests/v3-runtime.test.cjs tests/translation.test.cjs"
   },
   "devDependencies": {
     "@playwright/test": "1.65.1",
@@ -51,6 +52,10 @@
         {
           "from": "native-bin",
           "to": "native"
+        },
+        {
+          "from": "runtime-bin",
+          "to": "runtime"
         }
       ]
     },
@@ -61,6 +66,19 @@
       "extendInfo": {
         "CFBundleDisplayName": "PS5 Çevirmen"
       }
-    }
+    },
+    "asarUnpack": [
+      "**/node_modules/@tesseract.js-data/eng/**",
+      "**/node_modules/tesseract.js-core/**",
+      "**/node_modules/onnxruntime-node/**",
+      "**/node_modules/@img/**",
+      "**/node_modules/sharp/**"
+    ]
+  },
+  "dependencies": {
+    "@huggingface/transformers": "3.8.1",
+    "@tesseract.js-data/eng": "1.0.0",
+    "pngjs": "7.0.0",
+    "tesseract.js": "7.0.0"
   }
 }

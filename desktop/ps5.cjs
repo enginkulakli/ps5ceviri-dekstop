@@ -224,7 +224,7 @@ class Ps5 {
         if (stopping || this.child !== child) return;
         if (this.state.stage !== "video") this.state = { stage: "video", id, ip };
         clearTimeout(deadline);
-        this.onVideo?.(bytes);
+        this.onVideo?.(bytes, child.stdout);
       });
       child.on("error", () => { this.state = { stage: "error", id, ip, error: "Remote Play bileşeni çalıştırılamadı." }; });
       child.stdin.on("error", () => {});

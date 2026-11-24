@@ -1,34 +1,18 @@
 # PS5 Çevirmen · Masaüstü
 
-Windows x64 ve Apple Silicon macOS için ortak Electron projesi. Android V3.0.1’in renkleri, yazı tipleri, kartları, ayar varsayılanları ve oyun sözlüğü düzenleyicisi masaüstüne uyarlandı. Kaynak incelemesi ve entegrasyon planı [Aşama 1 teknik raporunda](docs/asama-1-teknik-rapor.md).
+Windows x64 için PS5 Remote Play görüntüsünü arka planda alan, İngilizce altyazıları okuyup Türkçeye çeviren ve mevcut Samsung Tizen istemcisine gönderen test sürümü.
 
-## Bu sürümde
+- [Windows kurulum paketi ve otomatik testler](https://github.com/enginkulakli/ps5ceviri-dekstop/actions/workflows/windows.yml)
+- [Gerçek PS5 ve Samsung Tizen 4.0 ile test adımları](docs/windows-donanim-testi.md)
+- [Windows V3 işlevleri, test kapsamı ve eksikler](docs/windows-v3-durum.md)
+- [Android V3 referansı ve mimari rapor](docs/asama-1-teknik-rapor.md)
 
-- Türkçe durum ekranı ve masaüstü gezinmesi.
-- Çeviri modu, motor tercihi, OCR aralığı, oyun sözlüğü ve TV adresi/portu için yerel ayarlar.
-- İlk açılışta Samsung TV hazırlık adımları ve bilgisayarın yerel IPv4 adresleri. TV kurulumu atlanabilir ve Genel ayarlar’dan tekrar açılabilir.
+Windows paketi imzasızdır. macOS başlangıç paketi yerel ad hoc imzalıdır ve Apple noter onayı içermez. SmartScreen veya Gatekeeper uyarıları görülebilir.
 
-PS5 keşfi/eşleştirme, Remote Play, OCR, çeviri motorları, çeviri arşivi, TV keşfi ve altyazı sunucusu ile Tizen imzalama/yükleme sonraki aşamalara ait. Bu sürüm hesap kimliği, PIN, API anahtarı veya sertifika parolası istemez.
+## Derleme
 
-## Yerelde derleme
+Windows x64 kurulum derlemesi Node.js 24, npm, MSYS2 MinGW64 ve Temurin JDK 21 kullanır. GitHub Actions bağımlılıkları ve Windows çalıştırma zamanlarını hazırlar, ardından `npm run dist:win` komutuyla `release/` dizinine NSIS paketini üretir. Bağımlılık sürümleri, Chiaki kaynak commit’i ve FFmpeg SHA256 değeri derleme betiklerinde kayıtlıdır. [Windows iş akışı](.github/workflows/windows.yml)
 
-Node.js 24 ve npm gerekir.
+Masaüstü arayüzünü geliştirmek için `npm ci`, `npm run build`, `npx --no-install install-electron` ve `npm start` komutlarını kullanın. PS5 yerel ağ testleri `npm run test:unit` ile çalışır. `npm run test:windows`, `scripts/build-v3-runtime.sh` ile oluşturulan JVM çıktısını ve FFmpeg’i kullanır.
 
-```sh
-npm ci
-npm run build
-npx --no-install install-electron
-npm start
-```
-
-Açılış, yerel IP köprüsü, ayar doğrulama ve yeniden başlatma testi için `npm run test:smoke` komutunu çalıştırın. Linux, geliştirme ve bu test için kullanılabilir.
-
-## Windows ve macOS paketleri
-
-- Windows 10/11 x64 üzerinde `npm run dist:win`, NSIS `.exe` dosyasını `release/` klasörüne yazar.
-- Apple Silicon macOS üzerinde `npm run dist:mac`, `.app` ile onu içeren `.dmg` dosyasını `release/` klasörüne yazar.
-- [GitHub Actions](https://github.com/enginkulakli/ps5ceviri-dekstop/actions) başarılı işlerin Artifacts bölümünde Windows ve macOS paketlerini ayrı sunar.
-
-Bu derlemelerde Windows paketi imzasızdır. macOS paketi yerel ad hoc imza kullanır ve Apple noter onayı içermez. İndirilen paketlerde Windows SmartScreen veya macOS Gatekeeper uyarısı görülebilir. Genel dağıtım için yayıncı imzası ve macOS noter onayı ayrıca yapılandırılmalıdır.
-
-Lisans [AGPL-3.0-only](LICENSE). Android kaynak referansı ve yazı tipi lisansları [licenses](licenses/) altında.
+[Lisans](LICENSE) · [Kaynak ve bağımlılık bildirimleri](licenses/NOTICE.txt)

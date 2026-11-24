@@ -14,6 +14,7 @@ jobs:
     timeout-minutes: 35
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      ONNXRUNTIME_NODE_INSTALL_CUDA: skip
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,8 +32,25 @@ jobs:
       - name: Compile and run the headless PS5 helper
         shell: msys2 {0}
         run: bash scripts/build-windows-native.sh
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Stage the JVM and pinned video decoder
+        shell: pwsh
+        run: ./scripts/stage-windows-runtime.ps1
+      - name: Compile the reused Android V3 Kotlin core
+        shell: bash
+        run: bash scripts/build-v3-runtime.sh .native-deps/kotlinc/lib
       - run: npm ci
       - run: npm run test:unit
+      - name: Test H.264, OCR, V3, translation and Tizen protocol
+        shell: pwsh
+        run: |
+          $env:PS5_TEST_JAVA = (Resolve-Path './runtime-bin/jre/bin/java.exe').Path
+          $env:PS5_TEST_FFMPEG = (Resolve-Path './runtime-bin/ffmpeg.exe').Path
+          npm run test:windows
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Check the native helper outside MSYS2
         shell: pwsh
         run: |
@@ -47,6 +65,7 @@ jobs:
             Where-Object Name -NotLike 'Uninstall*' | Select-Object -First 1
           if (-not $exe) { throw 'Packaged desktop executable is missing.' }
           $env:PS5_DESKTOP_EXECUTABLE = $exe.FullName
+          $env:PS5_PACKAGED_WINDOWS = "1"
           npm run test:smoke
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4

@@ -10,3 +10,17 @@ Ionicons yazı tipi ve glif haritası @react-native-vector-icons/ionicons
 paketinden yüklenir. Paket ve Ionic glif lisansları bu klasördedir.
 Derlenen arayüzün bağımlılık lisansları dist/THIRD-PARTY-LICENSES.md
 dosyasındadır.
+
+Windows altyapısı için kaynaklar
+Chiaki ve alt modülleri: https://github.com/streetpea/chiaki-ng/tree/43728af2e639fecb8a7af1cd68c29820a40de973
+Windows C/C++ bağımlılıkları ve derleme tarifleri: https://packages.msys2.org/
+FFmpeg 9.1 Windows dağıtımı ve yapı bilgisi: https://github.com/GyanD/codexffmpeg/releases/tag/9.1
+FFmpeg 9.1 kaynak kodu: https://ffmpeg.org/releases/
+Kotlin 2.2.21 ve Kotlin Standard Library: https://github.com/JetBrains/kotlin/tree/v2.2.21
+Java-WebSocket 1.6.0: https://github.com/TooTallNate/Java-WebSocket/tree/v1.6.0
+JSON-java: https://github.com/stleary/JSON-java/tree/20250517
+SLF4J: https://www.slf4j.org/
+Temurin 21 çalışma zamanı: https://adoptium.net/temurin/
+Tesseract OCR: https://github.com/naptha/tesseract.js/tree/v7.0.0
+Tesseract English model: https://github.com/naptha/tessdata
+Çevrimdışı EN→TR model: https://huggingface.co/Xenova/m2m100_418M/tree/9c374f0b7aca709787cea97b047bfbbd1559d177
