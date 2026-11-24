@@ -45,6 +45,10 @@ Varsayılan altyazı bölgesi karenin alt %28’i, aralık 300 ms, doğrulama sa
 - **Keşif ve yetki.** Sihirbaz aynı ağda Samsung TV adaylarını aramalı ve manuel IP alabilmeli. Adayı Tizen Studio Device Manager/SDB üzerinden doğrulamalı. TV’de Smart Hub/Uygulamalar, bazı modellerde Uygulamalar → Ayarlar, ardından kumanda veya ekran tuş takımıyla `12345`, Developer Mode, bilgisayarın LAN IP’si ve yeniden başlatma adımları gösterilmeli. Ağ izolasyonu, yanlış IP, kapalı Geliştirici Modu ve SDB hataları ayrı bildirilmelidir. [Samsung TV cihaz kılavuzu](https://developer.samsung.com/smarttv/develop/getting-started/using-sdk/tv-device.html).
 - **İmzalama ve yükleme.** Samsung TV SDK ve Samsung Certificate Extension tespit edilmeli. Yetkilendirme için Samsung hesabı ve cihazın DUID’sini içeren dağıtım sertifikasıyla author/distributor profili gerekir. Hesap girişi ve sertifika parolası resmi Certificate Manager’da kalmalı. Masaüstü, kullanıcının yerel profilini seçip standart Tizen paketleme/yükleme aracını çağırmalı. Paket kimliği, imzalı çıktı ve hedefte kurulu uygulama doğrulanmalı. Eski author sertifikasıyla imzalanan mevcut bir kurulumun güncellenebilmesi için aynı author sertifikası gerekebilir. TV araçlarının Apple Silicon ve eski TV firmware’iyle çalışma durumu gerçek makinelerde sınanmalı. [Samsung sertifika kılavuzu](https://developer.samsung.com/smarttv/develop/getting-started/setting-up-sdk/creating-certificates.html).
 
+## Kaynak testinin tekrarı
+
+Sabit Android commit’indeki Kotlin çekirdeği ve test düzeneği Kotlin 2.2.21 ile JVM hedefinde derlendi. Kaynağın `tests/native/test_tv_protocol.cjs` testi, sabit V2 TV JavaScript’ini bu JVM sunucusuna TCP üzerinden bağladı ve geçti. Test, V3 takip ve sözlük kontrollerini çalıştırdı. Altyazı TTL ve yenileme davranışını, konumlu kutuları, temizlemeyi ve altyazı moduna dönüşü doğruladı. Bu doğrulama kaydedilmiş test girdilerini kullanır. PS5 görüntü akışı, ML Kit’e denk OCR kalitesi ve fiziksel Tizen 4.0 kurulumu donanım testleri gerektirir.
+
 ## Uygulama ve doğrulama sırası
 
 | Aşama | Çıkış ölçütü |

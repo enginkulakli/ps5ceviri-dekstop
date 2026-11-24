@@ -5,6 +5,7 @@ const { tmpdir } = require("node:os");
 const path = require("node:path");
 const { strict: assert } = require("node:assert");
 const { test } = require("node:test");
+const { launchMacPackage } = require("./macos-launch.cjs");
 
 test("desktop setup, connection preferences and glossary survive a restart", { timeout: 90_000 }, async () => {
   const profile = await mkdtemp(path.join(tmpdir(), "ps5-desktop-test-"));
@@ -14,10 +15,13 @@ test("desktop setup, connection preferences and glossary survive a restart", { t
     args.push("--ozone-platform=headless");
   }
   if (!executablePath) args.push(path.resolve(__dirname, ".."));
+  const launch = executablePath && process.platform === "darwin"
+    ? () => launchMacPackage(executablePath, args)
+    : () => _electron.launch({ args, executablePath, chromiumSandbox: process.platform !== "linux", timeout: 20_000 });
   let app;
 
   try {
-    app = await _electron.launch({ args, executablePath, chromiumSandbox: process.platform !== "linux" });
+    app = await launch();
     const page = await app.firstWindow();
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
@@ -55,8 +59,9 @@ test("desktop setup, connection preferences and glossary survive a restart", { t
     await expect(page.getByRole("button", { name: "Çeviriyi Başlat" })).toBeDisabled();
     assert.deepEqual(errors, []);
     await app.close();
+    app = undefined;
 
-    app = await _electron.launch({ args, executablePath, chromiumSandbox: process.platform !== "linux" });
+    app = await launch();
     const reopened = await app.firstWindow();
     await expect(reopened.getByRole("heading", { name: "Durum", exact: true })).toBeVisible();
     await reopened.getByRole("button", { name: "Samsung TV", exact: true }).click();

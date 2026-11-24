@@ -23,7 +23,7 @@ jobs:
       - run: npm ci
       - name: Build arm64 disk image with local ad-hoc signing
         run: npm run dist:mac
-      - name: Verify disk image and launch packaged app
+      - name: Verify disk image and bundle signature
         run: |
           test "$(uname -m)" = arm64
           app="$(find release -maxdepth 2 -type d -name '*.app' -print -quit)"
@@ -31,6 +31,9 @@ jobs:
           test -n "$app" && test -n "$dmg"
           hdiutil verify "$dmg"
           codesign --verify --deep --strict "$app"
+      - name: Launch packaged app and verify setup
+        run: |
+          app="$(find release -maxdepth 2 -type d -name '*.app' -print -quit)"
           name="$(/usr/libexec/PlistBuddy -c 'Print CFBundleExecutable' "$app/Contents/Info.plist")"
           ELECTRON_ENABLE_LOGGING=1 PS5_DESKTOP_EXECUTABLE="$PWD/$app/Contents/MacOS/$name" npm run test:smoke
       - name: Read macOS crash diagnostics
