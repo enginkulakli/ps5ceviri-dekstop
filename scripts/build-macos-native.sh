@@ -8,6 +8,15 @@ fi
 
 export MACOSX_DEPLOYMENT_TARGET=15.0
 root="$(pwd -P)"
+tools="$root/.native-deps"
+mkdir -p "$tools"
+# The Python protobuf runtime must be compatible with the nanopb generator output.
+protoc_zip="$tools/protoc.zip"
+curl -fLsS --retry 3 https://github.com/protocolbuffers/protobuf/releases/download/v33.2/protoc-33.2-osx-aarch_64.zip -o "$protoc_zip"
+printf '%s  %s\n' '5be1427127788c9f7dd7d606c3e69843dd3587327dea993917ffcb77e7234b44' "$protoc_zip" | shasum -a 256 -c -
+unzip -qo "$protoc_zip" -d "$tools/protoc"
+export PATH="$tools/protoc/bin:$PATH"
+protoc --version
 libraries=(openssl@3 libevent json-c miniupnpc)
 prefixes=()
 for library in "${libraries[@]}"; do

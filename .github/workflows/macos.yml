@@ -24,7 +24,7 @@ jobs:
       - name: Install native build dependencies
         run: |
           test "$(uname -m)" = arm64
-          brew install cmake ninja pkgconf protobuf openssl@3 libevent json-c miniupnpc
+          brew install cmake ninja pkgconf openssl@3 libevent json-c miniupnpc
           python3 -m venv .native-deps/python
           .native-deps/python/bin/python -m pip install protobuf==6.33.5
       - name: Compile the headless Chiaki helper
