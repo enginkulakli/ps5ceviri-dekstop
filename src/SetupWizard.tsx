@@ -65,7 +65,7 @@ export function SetupWizard({ finishLater, openTv }: { finishLater: () => void; 
             <div className="connection-diagram">
               <div className="tv-diagram" aria-hidden="true">
                 <div className="diagram-title">Developer Mode <strong>ON</strong></div>
-                <div className="diagram-ip"><span>Host PC IP</span><code>{ip || "192.168.1.25"}</code></div>
+                <div className="diagram-ip"><span>Host PC IP</span><code>{ip || "—"}</code></div>
                 <div className="diagram-ok">OK</div>
               </div>
               <label className="ip-picker">

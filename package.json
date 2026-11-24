@@ -15,7 +15,7 @@
     "start": "electron .",
     "test:smoke": "node --test tests/desktop-smoke.test.cjs",
     "dist:win": "npm run build && electron-builder --win nsis --x64 --publish never",
-    "dist:mac": "npm run build && electron-builder --mac dmg --arm64 --publish never -c.mac.identity=-"
+    "dist:mac": "npm run build && electron-builder --mac dmg --arm64 --publish never -c.mac.identity=- -c.productName=\"PS5 Cevirmen\""
   },
   "devDependencies": {
     "@playwright/test": "1.65.1",
@@ -51,7 +51,9 @@
       "category": "public.app-category.utilities",
       "icon": "src/assets/images/icon.png",
       "target": "dmg",
-      "executableName": "PS5 Cevirmen"
+      "extendInfo": {
+        "CFBundleDisplayName": "PS5 Çevirmen"
+      }
     }
   }
 }

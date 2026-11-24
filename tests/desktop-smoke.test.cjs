@@ -5,7 +5,6 @@ const { tmpdir } = require("node:os");
 const path = require("node:path");
 const { strict: assert } = require("node:assert");
 const { test } = require("node:test");
-const { launchMacPackage } = require("./macos-launch.cjs");
 
 test("desktop setup, connection preferences and glossary survive a restart", { timeout: 90_000 }, async () => {
   const profile = await mkdtemp(path.join(tmpdir(), "ps5-desktop-test-"));
@@ -15,9 +14,7 @@ test("desktop setup, connection preferences and glossary survive a restart", { t
     args.push("--ozone-platform=headless");
   }
   if (!executablePath) args.push(path.resolve(__dirname, ".."));
-  const launch = executablePath && process.platform === "darwin"
-    ? () => launchMacPackage(executablePath, args)
-    : () => _electron.launch({ args, executablePath, chromiumSandbox: process.platform !== "linux", timeout: 20_000 });
+  const launch = () => _electron.launch({ args, executablePath, chromiumSandbox: process.platform !== "linux", timeout: 20_000 });
   let app;
 
   try {

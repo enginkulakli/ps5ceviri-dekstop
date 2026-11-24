@@ -23,15 +23,22 @@ jobs:
       - run: npm ci
       - name: Build arm64 disk image with local ad-hoc signing
         run: npm run dist:mac
-      - name: Verify disk image and bundle signature
+      - name: Verify disk image, bundle helpers and signature
+        id: verify
         run: |
           test "$(uname -m)" = arm64
           app="$(find release -maxdepth 2 -type d -name '*.app' -print -quit)"
           dmg="$(find release -maxdepth 1 -name '*.dmg' -print -quit)"
           test -n "$app" && test -n "$dmg"
           hdiutil verify "$dmg"
+          # Electron resolves the helper using CFBundleName, independently of the display name.
+          bundle_name="$(/usr/libexec/PlistBuddy -c 'Print CFBundleName' "$app/Contents/Info.plist")"
+          test "$bundle_name" = 'PS5 Cevirmen'
+          test -d "$app/Contents/Frameworks/$bundle_name Helper.app"
+          test -d "$app/Contents/Frameworks/$bundle_name Helper (Renderer).app"
           codesign --verify --deep --strict "$app"
       - name: Launch packaged app and verify setup
+        id: smoke
         run: |
           app="$(find release -maxdepth 2 -type d -name '*.app' -print -quit)"
           name="$(/usr/libexec/PlistBuddy -c 'Print CFBundleExecutable' "$app/Contents/Info.plist")"
@@ -48,8 +55,10 @@ jobs:
             fi
             sleep 1
           done
+          /usr/bin/log show --last 2m --style compact             --predicate 'process == "PS5 Cevirmen" OR eventMessage CONTAINS[c] "com.ps5ceviri.desktop"' | tail -60
       - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() && steps.verify.outcome == 'success' }}
         with:
-          name: ps5ceviri-macos-arm64
+          name: ${{ steps.smoke.outcome == 'success' && 'ps5ceviri-macos-arm64' || 'ps5ceviri-macos-arm64-startup-unverified' }}
           path: release/*.dmg
           if-no-files-found: error
