@@ -7,4 +7,6 @@ https://github.com/enginkulakli/ps5ceviri/tree/e8273ffffa813461207b24b859a892939
 Barlow Condensed ve IBM Plex Sans yazı tipleri Android kaynağından alınmıştır.
 Bu yazı tiplerinin SIL Open Font License metinleri bu klasördedir.
 Ionicons yazı tipi ve glif haritası @react-native-vector-icons/ionicons
-paketinden yüklenir. Ionicons lisansı bu klasördedir.
+paketinden yüklenir. Paket ve Ionic glif lisansları bu klasördedir.
+Derlenen arayüzün bağımlılık lisansları dist/THIRD-PARTY-LICENSES.md
+dosyasındadır.
