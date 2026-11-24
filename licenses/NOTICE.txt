@@ -1,0 +1,10 @@
+PS5 Çevirmen masaüstü başlangıç projesi
+Kaynak kod: https://github.com/enginkulakli/ps5ceviri-dekstop
+
+Android arayüzü, ayar modeli ve görselleri için kaynak:
+https://github.com/enginkulakli/ps5ceviri/tree/e8273ffffa813461207b24b859a89293905b66a7/frontend
+
+Barlow Condensed ve IBM Plex Sans yazı tipleri Android kaynağından alınmıştır.
+Bu yazı tiplerinin SIL Open Font License metinleri bu klasördedir.
+Ionicons yazı tipi ve glif haritası @react-native-vector-icons/ionicons
+paketinden yüklenir. Ionicons lisansı bu klasördedir.

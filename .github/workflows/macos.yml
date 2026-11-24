@@ -1,0 +1,40 @@
+name: Build macOS Apple Silicon
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: macos-15
+    timeout-minutes: 25
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Build arm64 disk image with local ad-hoc signing
+        run: npm run dist:mac
+      - name: Verify disk image and launch packaged app
+        run: |
+          test "$(uname -m)" = arm64
+          app="$(find release -maxdepth 2 -type d -name '*.app' -print -quit)"
+          dmg="$(find release -maxdepth 1 -name '*.dmg' -print -quit)"
+          test -n "$app" && test -n "$dmg"
+          hdiutil verify "$dmg"
+          codesign --verify --deep --strict "$app"
+          name="$(/usr/libexec/PlistBuddy -c 'Print CFBundleExecutable' "$app/Contents/Info.plist")"
+          PS5_DESKTOP_EXECUTABLE="$PWD/$app/Contents/MacOS/$name" npm run test:smoke
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ps5ceviri-macos-arm64
+          path: release/*.dmg
+          if-no-files-found: error

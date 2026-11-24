@@ -1,0 +1,56 @@
+{
+  "name": "ps5ceviri-desktop",
+  "productName": "PS5 Çevirmen",
+  "description": "PS5 Çevirmen masaüstü uygulaması",
+  "version": "0.1.0",
+  "private": true,
+  "author": "PS5 Çevirmen contributors",
+  "license": "AGPL-3.0-only",
+  "main": "desktop/main.cjs",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc --noEmit && node --check desktop/main.cjs && node --check desktop/preload.cjs && vite build",
+    "start": "electron .",
+    "test:smoke": "node --test tests/desktop-smoke.test.cjs",
+    "dist:win": "npm run build && electron-builder --win nsis --x64 --publish never",
+    "dist:mac": "npm run build && electron-builder --mac dmg --arm64 --publish never -c.mac.identity=-"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@react-native-vector-icons/ionicons": "14.0.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "electron": "42.11.18",
+    "electron-builder": "26.18.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-native": "0.88.0",
+    "react-native-web": "0.21.4",
+    "typescript": "6.0.3",
+    "vite": "8.3.8"
+  },
+  "build": {
+    "appId": "com.ps5ceviri.desktop",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "desktop/**/*",
+      "LICENSE",
+      "licenses/**/*"
+    ],
+    "artifactName": "PS5-Cevirmen-${version}-${os}-${arch}.${ext}",
+    "win": {
+      "icon": "src/assets/images/icon.png",
+      "target": "nsis"
+    },
+    "mac": {
+      "category": "public.app-category.utilities",
+      "icon": "src/assets/images/icon.png",
+      "target": "dmg"
+    }
+  }
+}

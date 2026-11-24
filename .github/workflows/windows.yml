@@ -1,0 +1,39 @@
+name: Build Windows x64
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-2022
+    timeout-minutes: 25
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Build unsigned NSIS installer
+        run: npm run dist:win
+      - name: Launch packaged app and verify setup
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem 'release/win-unpacked' -Filter '*.exe' |
+            Where-Object Name -NotLike 'Uninstall*' | Select-Object -First 1
+          if (-not $exe) { throw 'Packaged desktop executable is missing.' }
+          $env:PS5_DESKTOP_EXECUTABLE = $exe.FullName
+          npm run test:smoke
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ps5ceviri-windows-x64
+          path: release/*.exe
+          if-no-files-found: error

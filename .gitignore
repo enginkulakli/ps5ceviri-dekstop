@@ -1,0 +1,13 @@
+node_modules/
+dist/
+release/
+playwright-report/
+test-results/
+*.log
+*.p12
+*.pfx
+*.pem
+*.key
+profiles.xml
+.env
+.env.*
