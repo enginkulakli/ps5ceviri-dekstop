@@ -76,6 +76,7 @@
     ]
   },
   "dependencies": {
+    "@agnai/sentencepiece-js": "1.1.1",
     "@huggingface/transformers": "3.8.1",
     "@tesseract.js-data/eng": "1.0.0",
     "pngjs": "7.0.0",

@@ -4,7 +4,7 @@
 
 1. GitHub Actions’ın son başarılı **Build Windows x64** çalıştırmasındaki `ps5ceviri-windows-x64` artefaktını indirin. ZIP’i açıp içindeki `.exe` ile PS5 Çevirmen’i kurun. Windows paketi imzasızdır ve SmartScreen uyarısı çıkabilir. [Derlemeler](https://github.com/enginkulakli/ps5ceviri-dekstop/actions/workflows/windows.yml)
 2. Windows bilgisayarı, PS5’i ve Samsung TV’yi aynı yerel ağa bağlayın. PS5’i TV’ye HDMI ile bağlayın ve oyunda İngilizce altyazıları açın. Windows güvenlik duvarı PS5 Çevirmen veya beraberindeki Java TV sunucusu için ağ izni isterse yalnızca kullandığınız özel ağı seçin.
-3. **Çeviri ayarları** bölümünde motor seçin. Google Cloud için Basic v2 Translation API etkin olmalı ve anahtar Windows’tan kullanıma izin vermeli. Android paketine kısıtlanmış anahtar Windows’ta reddedilebilir. OpenAI için kendi API anahtarınızı girin. Cihaz içi seçenekte **Yerel EN→TR modelini hazırla** düğmesi ilk seferde yaklaşık 610 MB indirir. **Çeviri testi** ile bir İngilizce cümleyi deneyin.
+3. **Çeviri ayarları** bölümünde motor seçin. Google Cloud için Basic v2 Translation API etkin olmalı ve anahtar Windows’tan kullanıma izin vermeli. Android paketine kısıtlanmış anahtar Windows’ta reddedilebilir. OpenAI için kendi API anahtarınızı girin. Cihaz içi seçenekte **Yerel EN→TR modelini hazırla** düğmesi ilk seferde internetten yaklaşık 510 MB model verisi indirir. **Çeviri testi** ile bir İngilizce cümleyi deneyin.
 
 ## Samsung TV
 

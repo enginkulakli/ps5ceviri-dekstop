@@ -6,7 +6,7 @@ const path = require("node:path");
 const { strict: assert } = require("node:assert");
 const { test } = require("node:test");
 
-test("desktop setup, connection preferences and glossary survive a restart", { timeout: 90_000 }, async () => {
+test("desktop setup, connection preferences and glossary survive a restart", { timeout: process.env.PS5_PACKAGED_WINDOWS === "1" ? 420_000 : 90_000 }, async () => {
   const profile = await mkdtemp(path.join(tmpdir(), "ps5-desktop-test-"));
   const executablePath = process.env.PS5_DESKTOP_EXECUTABLE;
   const args = [`--user-data-dir=${profile}`];
@@ -49,6 +49,12 @@ test("desktop setup, connection preferences and glossary survive a restart", { t
         } finally { await ocr.stop(); }
       }, fixture);
       assert.match(recognized, /GET TO THE BOAT/i);
+      const local = await page.evaluate(() => window.ps5Desktop.live.translate("Follow the lantern.", { engine: "offline" }));
+      assert.match(local.text, /fener/i);
+      assert.equal(local.cached, false);
+      const cached = await page.evaluate(() => window.ps5Desktop.live.translate("Follow the lantern.", { engine: "offline" }));
+      assert.equal(cached.cached, true);
+      assert.equal(cached.text, local.text);
     }
 
     await page.getByRole("button", { name: "TV’yi hazırlamaya başla" }).click();

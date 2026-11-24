@@ -23,4 +23,6 @@ SLF4J: https://www.slf4j.org/
 Temurin 21 çalışma zamanı: https://adoptium.net/temurin/
 Tesseract OCR: https://github.com/naptha/tesseract.js/tree/v7.0.0
 Tesseract English model: https://github.com/naptha/tessdata
-Çevrimdışı EN→TR model: https://huggingface.co/Xenova/m2m100_418M/tree/9c374f0b7aca709787cea97b047bfbbd1559d177
+Çevrimdışı EN→TR model: https://huggingface.co/onnx-community/opus-mt-tc-big-en-tr/tree/ce128ea834a090aca240e4e113e7756e06cc78e0
+Orijinal OPUS-MT model ve CC BY 4.0: https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-en-tr
+SentencePiece: https://github.com/google/sentencepiece

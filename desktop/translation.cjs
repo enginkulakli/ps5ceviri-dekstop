@@ -1,24 +1,86 @@
 const { createHash } = require("node:crypto");
-const { mkdirSync } = require("node:fs");
+const { mkdir, readFile, rename, writeFile } = require("node:fs/promises");
 const path = require("node:path");
 
 const google = "https://translation.googleapis.com/language/translate/v2";
 const openai = "https://api.openai.com/v1/chat/completions";
-const model = "Xenova/m2m100_418M";
-const revision = "9c374f0b7aca709787cea97b047bfbbd1559d177";
+const model = "onnx-community/opus-mt-tc-big-en-tr";
+const revision = "ce128ea834a090aca240e4e113e7756e06cc78e0";
+const tokenizerAssets = {
+  "source.spm": "180d3f94ddfee5585d78b702290ded0f4f9bd40f299349c8383b32a579fefad4",
+  "vocab.json": "01ef522455d2bf22b0716416ee34688cc2b3f5fa257f742665d21b6acc450ac1",
+};
 
 function glossaryVersion(terms) {
   const material = terms.map(({ source, target }) => source + "\x01" + target).join("\x00");
   return "v3-" + createHash("sha256").update(material).digest("hex").slice(0, 24);
 }
 
-function startOffline(cache) {
-  return (async () => {
-    const { pipeline, env } = await import("@huggingface/transformers");
-    mkdirSync(cache, { recursive: true });
-    env.cacheDir = cache;
-    return pipeline("translation", model, { revision, dtype: "q8", device: "cpu" });
-  })();
+async function tokenizerAsset(directory, name) {
+  const file = path.join(directory, name);
+  const expected = tokenizerAssets[name];
+  const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
+  const present = await readFile(file).catch((error) => {
+    if (error.code !== "ENOENT") throw error;
+    return null;
+  });
+  if (present && digest(present) === expected) return file;
+  const response = await fetch(`https://huggingface.co/${model}/resolve/${revision}/${name}`, {
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!response.ok || !response.body) throw new Error("Yerel modelin sözcük dosyası indirilemedi.");
+  const parts = [];
+  let size = 0;
+  for await (const part of response.body) {
+    size += part.length;
+    if (size > 4 * 1024 * 1024) throw new Error("Model sözcük dosyası beklenen boyutu aşıyor.");
+    parts.push(Buffer.from(part));
+  }
+  const bytes = Buffer.concat(parts);
+  if (digest(bytes) !== expected) throw new Error("Model sözcük dosyasının sağlama toplamı eşleşmedi.");
+  await writeFile(file + ".new", bytes);
+  await rename(file + ".new", file);
+  return file;
+}
+
+async function startOffline(cache) {
+  const { AutoModelForSeq2SeqLM, Tensor, env } = await import("@huggingface/transformers");
+  const { SentencePieceProcessor } = require("@agnai/sentencepiece-js");
+  const directory = path.join(cache, "opus-tokenizer-" + revision);
+  await mkdir(directory, { recursive: true });
+  env.cacheDir = cache;
+  const [source, vocab] = await Promise.all(Object.keys(tokenizerAssets).map((name) => tokenizerAsset(directory, name)));
+  const tokenizer = new SentencePieceProcessor();
+  await tokenizer.load(source);
+  const vocabulary = JSON.parse(await readFile(vocab, "utf8"));
+  const byId = Object.fromEntries(Object.entries(vocabulary).map(([piece, id]) => [id, piece]));
+  const engine = await AutoModelForSeq2SeqLM.from_pretrained(model, { revision, dtype: "q8", device: "cpu" });
+  const { eos_token_id: eos, pad_token_id: pad } = engine.config;
+  let queue = Promise.resolve();
+
+  async function translate(query, signal) {
+    signal?.throwIfAborted();
+    const input = tokenizer.encodePieces(query).slice(0, 384).map((piece) =>
+      BigInt(Object.hasOwn(vocabulary, piece) ? vocabulary[piece] : vocabulary["<unk>"]));
+    input.push(BigInt(eos));
+    const tensor = new Tensor("int64", BigInt64Array.from(input), [1, input.length]);
+    const mask = new Tensor("int64", new BigInt64Array(input.length).fill(1n), [1, input.length]);
+    const output = await engine.generate({
+      input_ids: tensor, attention_mask: mask, max_new_tokens: 120, num_beams: 3, early_stopping: true,
+    });
+    signal?.throwIfAborted();
+    return output.tolist()[0].map(Number).filter((id) => id !== eos && id !== pad)
+      .map((id) => byId[id] ?? "").join("").replace(/▁/g, " ").trim();
+  }
+
+  return {
+    translate(query, signal) {
+      const result = queue.then(() => translate(query, signal));
+      queue = result.catch(() => {});
+      return result;
+    },
+    dispose: () => engine.dispose(),
+  };
 }
 
 async function responseText(response, maximum = 1048576) {
@@ -79,9 +141,9 @@ class Translator {
     if (options.engine === "offline") {
       const engine = await this.prepareOffline();
       signal?.throwIfAborted();
-      const answers = await engine(queries, { src_lang: "en", tgt_lang: "tr", max_new_tokens: 160, num_beams: 4, no_repeat_ngram_size: 3 });
-      signal?.throwIfAborted();
-      return answers.map(({ translation_text }) => translation_text);
+      const translations = [];
+      for (const query of queries) translations.push(await engine.translate(query, signal));
+      return translations;
     }
     const key = await this.readKey(options.engine);
     if (!key) throw new Error("Seçili çeviri motoru için API anahtarı girin.");
